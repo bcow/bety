@@ -9,8 +9,6 @@ rvm:
   - 1.9.3
   - 2.0.0
   - 2.1.8
-  - 2.2.4
-  - 2.3.0
 
 # cache packages and bundler
 cache:
@@ -53,7 +51,7 @@ env:
 
 before_script:
   - psql -U postgres -c "CREATE USER bety WITH SUPERUSER CREATEDB UNENCRYPTED PASSWORD 'bety'";
-  - psql -U bety -c "CREATE DATABASE test;"
+  - psql -U postgres -c "CREATE DATABASE test WITH OWNER bety;"
   - psql -U bety -d test -c "CREATE EXTENSION postgis;"
   - cp config/database.yml.travis config/database.yml
 
