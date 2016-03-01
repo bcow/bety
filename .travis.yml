@@ -48,8 +48,16 @@ notifications:
 services:
   - postgresql
 
+env:
+  - RAILS_ENV=test
+
 before_script:
   - psql -U postgres -c "CREATE USER bety WITH UNENCRYPTED PASSWORD 'bety'";
   - psql -U postgres -c "CREATE DATABASE test OWNER bety;"
   - psql -U postgres -c "CREATE EXTENSION postgis;"
   - cp config/database.yml.travis config/database.yml
+
+script: 
+  - bundle exec rake db:test:prepare
+  - bundle exec rake db:fixtures:load
+  - bundle exec rspec
