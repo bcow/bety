@@ -52,9 +52,9 @@ env:
   - RAILS_ENV=test
 
 before_script:
-  - psql -U postgres -c "CREATE USER bety WITH UNENCRYPTED PASSWORD 'bety'";
-  - psql -U postgres -c "CREATE DATABASE test OWNER bety;"
-  - psql -U postgres -c "CREATE EXTENSION postgis;"
+  - psql -U postgres -c "CREATE USER bety WITH SUPERUSER CREATEDB UNENCRYPTED PASSWORD 'bety'";
+  - psql -U bety -c "CREATE DATABASE test;"
+  - psql -U bety -d test -c "CREATE EXTENSION postgis;"
   - cp config/database.yml.travis config/database.yml
 
 script: 
