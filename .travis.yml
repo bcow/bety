@@ -46,16 +46,18 @@ notifications:
 services:
   - postgresql
 
-env:
-  - RAILS_ENV=test
-
 before_script:
+  - cp config/database.yml.travis config/database.yml
   - psql -U postgres -c "CREATE USER bety WITH SUPERUSER CREATEDB UNENCRYPTED PASSWORD 'bety'";
+  - psql -U postgres -c "CREATE DATABASE bety WITH OWNER bety;"
+  - psql -U bety -d bety -c "CREATE EXTENSION postgis;"
+  - curl -o load.bety.sh https://raw.githubusercontent.com/PecanProject/pecan/master/scripts/load.bety.sh
+  - chmod 755 load.bety.sh
+  - ./load.bety.sh -c -e -u -d bety
   - psql -U postgres -c "CREATE DATABASE test WITH OWNER bety;"
   - psql -U bety -d test -c "CREATE EXTENSION postgis;"
-  - cp config/database.yml.travis config/database.yml
 
 script: 
   - bundle exec rake db:test:prepare
-  - bundle exec rake db:fixtures:load
-  - bundle exec rspec
+  - RAILS_ENV=test bundle exec rake db:fixtures:load
+  - RAILS_ENV=test bundle exec rspec
