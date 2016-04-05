@@ -866,12 +866,12 @@ CREATE TABLE covariates (
     id bigint DEFAULT nextval('covariates_id_seq'::regclass) NOT NULL,
     trait_id bigint,
     variable_id bigint,
-    level numeric(16,4),
+    level double precision,
     created_at timestamp(6) without time zone DEFAULT utc_now(),
     updated_at timestamp(6) without time zone DEFAULT utc_now(),
     n integer,
     statname statnames DEFAULT ''::text,
-    stat numeric(16,4),
+    stat double precision,
     CONSTRAINT positive_covariate_sample_size CHECK ((n >= 1))
 );
 
@@ -966,6 +966,13 @@ CREATE TABLE current_posteriors (
     created_at timestamp without time zone DEFAULT utc_now(),
     updated_at timestamp without time zone DEFAULT utc_now()
 );
+
+
+--
+-- Name: COLUMN current_posteriors.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN current_posteriors.id IS 'This table makes it easier to identify the ''latest'' posterior for any PFT or other functional grouping. For example, if you query a specific PFT and project you get the list of variables that have been estimated and their (joint) posteriors.';
 
 
 --
@@ -1103,7 +1110,6 @@ CREATE SEQUENCE formats_id_seq
 
 CREATE TABLE formats (
     id bigint DEFAULT nextval('formats_id_seq'::regclass) NOT NULL,
-    dataformat text DEFAULT ''::text NOT NULL,
     notes text DEFAULT ''::text NOT NULL,
     created_at timestamp(6) without time zone DEFAULT utc_now(),
     updated_at timestamp(6) without time zone DEFAULT utc_now(),
@@ -1304,7 +1310,7 @@ CREATE TABLE managements (
     date date,
     dateloc numeric(4,2),
     mgmttype character varying(255) NOT NULL,
-    level numeric(16,4),
+    level double precision,
     units character varying(255),
     notes text DEFAULT ''::text NOT NULL,
     created_at timestamp(6) without time zone DEFAULT utc_now(),
@@ -1668,6 +1674,13 @@ CREATE TABLE posterior_samples (
 
 
 --
+-- Name: COLUMN posterior_samples.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN posterior_samples.id IS 'Allows a posterior to be updated asynchronously (i.e. for a given PFT, not all variables have to have the same posterior_id).';
+
+
+--
 -- Name: posterior_samples_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -1724,6 +1737,13 @@ CREATE TABLE posteriors_ensembles (
 
 
 --
+-- Name: COLUMN posteriors_ensembles.posterior_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN posteriors_ensembles.posterior_id IS 'Allows analyst to more easily see the functional grouping of the different sets of model runs used to generate a posterior.';
+
+
+--
 -- Name: posteriors_ensembles_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -1764,9 +1784,9 @@ CREATE TABLE priors (
     variable_id bigint NOT NULL,
     phylogeny character varying(255) NOT NULL,
     distn character varying(255) NOT NULL,
-    parama numeric(16,4) NOT NULL,
-    paramb numeric(16,4),
-    paramc numeric(16,4),
+    parama double precision NOT NULL,
+    paramb double precision,
+    paramc double precision,
     n integer,
     notes text,
     created_at timestamp(6) without time zone DEFAULT utc_now(),
@@ -1833,6 +1853,13 @@ CREATE TABLE projects (
     updated_at timestamp without time zone DEFAULT utc_now(),
     CONSTRAINT normalized_project_name CHECK (is_whitespace_normalized((name)::text))
 );
+
+
+--
+-- Name: COLUMN projects.id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN projects.id IS 'Defines the directory under which a set of analyses is done. Will allow migration of content from PEcAn settings.xml files that are not specific to a particular workflow instance but rather are shared across a set of analyses out of the settings file and into the database. There might be multiple ''workflows'' or analyses within a single project, but each of their workflows.outdir should be within the larger projects.outdir.';
 
 
 --
@@ -2199,10 +2226,10 @@ CREATE TABLE traits (
     dateloc numeric(4,2),
     "time" time(6) without time zone,
     timeloc numeric(4,2),
-    mean numeric(16,4),
+    mean double precision,
     n integer,
     statname statnames DEFAULT ''::text,
-    stat numeric(16,4),
+    stat double precision,
     notes text DEFAULT ''::text NOT NULL,
     created_at timestamp(6) without time zone DEFAULT utc_now(),
     updated_at timestamp(6) without time zone DEFAULT utc_now(),
@@ -2606,8 +2633,8 @@ CREATE TABLE yields (
     date date,
     dateloc numeric(4,2),
     statname statnames DEFAULT ''::text,
-    stat numeric(16,4),
-    mean numeric(16,4) NOT NULL,
+    stat double precision,
+    mean double precision NOT NULL,
     n integer,
     notes text DEFAULT ''::text NOT NULL,
     created_at timestamp(6) without time zone DEFAULT utc_now(),
@@ -2853,7 +2880,8 @@ UNION ALL
 --
 
 CREATE VIEW traits_and_yields_view AS
- SELECT traits_and_yields_view_private.result_type,
+ SELECT traits_and_yields_view_private.checked,
+    traits_and_yields_view_private.result_type,
     traits_and_yields_view_private.id,
     traits_and_yields_view_private.citation_id,
     traits_and_yields_view_private.site_id,
@@ -2884,7 +2912,7 @@ CREATE VIEW traits_and_yields_view AS
     traits_and_yields_view_private.notes,
     traits_and_yields_view_private.access_level
    FROM traits_and_yields_view_private
-  WHERE (traits_and_yields_view_private.checked > 0);
+  WHERE (traits_and_yields_view_private.checked >= 0);
 
 
 --
@@ -2917,6 +2945,8 @@ CREATE TABLE workflows (
     advanced_edit boolean DEFAULT false NOT NULL,
     start_date timestamp(6) without time zone,
     end_date timestamp(6) without time zone,
+    notes text,
+    user_id bigint,
     CONSTRAINT normalized_workflow_folder_name CHECK (is_whitespace_normalized((folder)::text)),
     CONSTRAINT normalized_workflow_hostname CHECK (is_whitespace_normalized((hostname)::text)),
     CONSTRAINT normalized_workflow_params_value CHECK (is_whitespace_normalized(params))
@@ -4639,6 +4669,14 @@ ALTER TABLE ONLY workflows
 
 ALTER TABLE ONLY workflows
     ADD CONSTRAINT fk_workflows_sites_1 FOREIGN KEY (site_id) REFERENCES sites(id);
+
+
+--
+-- Name: fk_workflows_users_1; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY workflows
+    ADD CONSTRAINT fk_workflows_users_1 FOREIGN KEY (user_id) REFERENCES users(id);
 
 
 --
