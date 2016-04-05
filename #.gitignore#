@@ -16,7 +16,5 @@ orig.public
 .DS_Store
 public/maps/*
 config/initializers/site_keys.rb
-*.Rproj*
-.ruby-version
-Gemfile.lock
+.Rproj.user
 

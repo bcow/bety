@@ -1,0 +1,26 @@
+development:
+  adapter: postgis
+  encoding: utf-8
+  reconnect: false
+  database: bety
+  pool: 5
+  username: bety
+  password: bety
+
+production:
+  adapter: postgis
+  encoding: utf-8
+  reconnect: false
+  database: bety
+  pool: 5
+  username: bety
+  password: bety
+
+test:
+  adapter: postgis
+  encoding: utf-8
+  reconnect: false
+  database: test
+  pool: 5
+  username: bety
+  password: bety
