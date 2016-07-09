@@ -206,3 +206,6 @@ DEPENDENCIES
   tzinfo (= 0.3.35)
   will_paginate (= 3.0.4)
   yajl-ruby
+
+BUNDLED WITH
+   1.11.2
