@@ -7,9 +7,10 @@ sudo: false
 # versions of ruby to use
 # see the list at http://rubies.travis-ci.org/
 rvm:
-  - 1.9.3
-  - 2.0.0
+  - 2.1.5
   - 2.1.8
+  - 2.2.4
+  - 2.3.0
 
 # used for all ruby tasks to specify the database
 env:
@@ -47,7 +48,6 @@ services:
 before_script:
   - psql -U postgres -c "CREATE USER bety WITH SUPERUSER CREATEDB UNENCRYPTED PASSWORD 'bety'";
   - cp config/database.yml.travis config/database.yml
-  - cp db/production_structure.sql db/test_structure.sql
   - psql -U postgres -c "CREATE DATABASE test WITH OWNER bety;"
   - psql -U bety -d test -c "CREATE EXTENSION postgis;"
   - bundle exec rake db:structure:load

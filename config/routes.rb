@@ -1,4 +1,5 @@
 BetyRails3::Application.routes.draw do # RAILS3 |map| removed
+  apipie
   # The priority is based upon order of creation:
   # first created -> highest priority.
 
@@ -156,6 +157,13 @@ BetyRails3::Application.routes.draw do # RAILS3 |map| removed
     end
   end
 
+  resources :sitegroups do
+    member do
+      get :edit_sitegroups_sites
+      post :edit_sitegroups_sites
+    end
+  end
+
   resources :sites do
     member do
       get :search_citations
@@ -238,7 +246,7 @@ BetyRails3::Application.routes.draw do # RAILS3 |map| removed
 
   # API
   namespace :api, defaults: { format: 'json' } do
-    namespace :v0 do
+    namespace :beta do
       [:citations, :covariates, :cultivars, :dbfiles, :ensembles, :entities,
       :formats, :inputs, :likelihoods, :machines, :managements, :methods,
       :mimetypes, :models, :modeltypes, :pfts, :posteriors, :priors, :runs,
